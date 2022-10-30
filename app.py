@@ -2,6 +2,7 @@ from PIL import ImageFont
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
+from apscheduler.schedulers.background import BackgroundScheduler
 from configparser import ConfigParser
 import time
 from datetime import datetime
@@ -49,6 +50,17 @@ def flower_photo():
 	else:
 		return jsonify({"error": "Unauthorized Request"}), 401
 
+def capture_worker():
+	now = datetime.now()
+	hour_str = now.strftime("%H")
+
+	if hour_str not in ['23', '00', '01', '02', '03', '04', '05', '06']:
+		print('Schedule work started at time' + hour_str)
+		global last_filename
+		pil_image = my_cam.capture()
+		pil_image = draw_date_text(pil_image, font)
+		last_filename = my_storage.upload_image(pil_image)
+
 if __name__ == '__main__':
 	cfg = ConfigParser()
 	cfg.read('conf/config.ini')
@@ -61,6 +73,10 @@ if __name__ == '__main__':
 	my_TGBot = TGBot(cfg.get('TG_BOT', 'TOKEN'), cfg.get('CF_R2_STORAGE', 'BUCKET_ID'))
 	my_storage = Storage(cfg.get('CF_R2_STORAGE', 'CF_ID'), cfg.get('CF_R2_STORAGE', 'KEY_ID'), cfg.get('CF_R2_STORAGE', 'SECRET_KEY'))
 	#my_workerskv = WorkersKV(cfg.get('CF_KV', 'CF_ACCOUNT'), cfg.get('CF_KV', 'CF_TOKEN'), cfg.get('CF_KV', 'KV_NS_ID'))
+
+	sched = BackgroundScheduler(daemon=True, timezone="Asia/Singapore")
+	sched.add_job(capture_worker, 'interval', minutes=60)
+	sched.start()
 	
 	CORS(app, resources=r'/*')
 
