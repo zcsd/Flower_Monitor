@@ -9,9 +9,10 @@ from datetime import datetime
 
 from camera import Camera
 from tgbot import TGBot
-from tool import draw_date_text
+from tool import draw_date_text, draw_env_text
 from storage import Storage 
 from workerskv import WorkersKV
+from serial_comm import SerialComm
 
 app = Flask(__name__)
 
@@ -36,8 +37,11 @@ def flower_photo():
 		if (now.strftime("%Y%m/%d/%H_%M") + '.jpg') == last_filename:
 			res = my_TGBot.send_storage_photo(last_filename, chat_id)
 		else:
+			temperature, humidity = my_serial.get_temperature_humidity()
+			lux = my_serial.get_illuminance()
 			pil_image = my_cam.capture()
 			pil_image = draw_date_text(pil_image, font)
+			pil_image = draw_env_text(pil_image, font, [temperature, humidity, lux])
 			res = my_TGBot.send_photo(pil_image, chat_id)
 			last_filename = my_storage.upload_image(pil_image)
 			#my_workerskv.put(last_filename, last_filename, str(round(time.time()) + 120))
@@ -73,6 +77,7 @@ if __name__ == '__main__':
 	my_TGBot = TGBot(cfg.get('TG_BOT', 'TOKEN'), cfg.get('CF_R2_STORAGE', 'BUCKET_ID'))
 	my_storage = Storage(cfg.get('CF_R2_STORAGE', 'CF_ID'), cfg.get('CF_R2_STORAGE', 'KEY_ID'), cfg.get('CF_R2_STORAGE', 'SECRET_KEY'))
 	#my_workerskv = WorkersKV(cfg.get('CF_KV', 'CF_ACCOUNT'), cfg.get('CF_KV', 'CF_TOKEN'), cfg.get('CF_KV', 'KV_NS_ID'))
+	my_serial = SerialComm()
 
 	sched = BackgroundScheduler(daemon=True, timezone="Asia/Singapore")
 	sched.add_job(capture_worker, 'interval', minutes=60)
