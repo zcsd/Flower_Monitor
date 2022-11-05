@@ -2,7 +2,6 @@ from PIL import ImageFont
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
-from apscheduler.schedulers.background import BackgroundScheduler
 from configparser import ConfigParser
 import time
 from datetime import datetime
@@ -20,30 +19,61 @@ app = Flask(__name__)
 def status():
 	return jsonify({"ok": True})
 
-#  nohup python3 -u app.py > out.log 2>&1 &
-@app.route('/flower-photo/', methods=['POST'])
-def flower_photo():
+@app.route('/flower-env/', methods=['POST'])
+def flower_env():
 	if request.headers.get('Authorization').split()[1] == auth_bearer_token:
+		print("-------------------------------------------------------------")
+		print("[✔] Authorized Request in flower-env.", datetime.now())
+		content = request.json
+
+		temperature, humidity = my_serial.get_temperature_humidity()
+		lux = my_serial.get_illuminance()
+		print("TODO: upload tem hum lux to planetscale")
+		return jsonify({"ok": True})
+	else:
+		print("-------------------------------------------------------------")
+		print("[✗] Unauthorized Request in flower-env.", datetime.now())
+		return jsonify({"error": "Unauthorized Request"}), 401
+
+#  nohup python3 -u app.py > out.log 2>&1 &
+@app.route('/flower-status/', methods=['POST'])
+def flower_status():
+	if request.headers.get('Authorization').split()[1] == auth_bearer_token:
+		print("-------------------------------------------------------------")
+		print("[✔] Authorized Request in flower-status.", datetime.now())
 		content = request.json
 		chat_id = content["chat_id"] 
-		command = content["command"]
+		send_to_chat = content["with_chat"]
+		is_cron = content["is_cron"] 
 		
 		now = datetime.now()
 		filename = now.strftime("%Y%m/%d/%H_%M") + '.jpg'
 
 		global last_filename
 
-		# cache within-1-minute photo
 		if (now.strftime("%Y%m/%d/%H_%M") + '.jpg') == last_filename:
+			# use cache within-1-minute photo
 			res = my_TGBot.send_storage_photo(last_filename, chat_id)
 		else:
 			temperature, humidity = my_serial.get_temperature_humidity()
 			lux = my_serial.get_illuminance()
+
 			pil_image = my_cam.capture()
 			pil_image = draw_date_text(pil_image, font)
 			pil_image = draw_env_text(pil_image, font, [temperature, humidity, lux])
-			res = my_TGBot.send_photo(pil_image, chat_id)
+
+			if send_to_chat:
+				res = my_TGBot.send_photo(pil_image, chat_id)
+				if is_cron:
+					print("Cron Job and sent to TG group.", datetime.now())
+				else:
+					print("Command Job and sent to TG group.", datetime.now())
+			else:
+				print("Cron Job and NOT send to TG group.")
+				res = True
+			
 			last_filename = my_storage.upload_image(pil_image)
+			print("TODO: upload tem hum lux to planetscale")
 			#my_workerskv.put(last_filename, last_filename, str(round(time.time()) + 120))
 
 		if res:
@@ -52,18 +82,9 @@ def flower_photo():
 			return jsonify({"error": "Fail to send message."}), 500
 
 	else:
+		print("-------------------------------------------------------------")
+		print("[✗] Unauthorized Request in flower-status.", datetime.now())
 		return jsonify({"error": "Unauthorized Request"}), 401
-
-def capture_worker():
-	now = datetime.now()
-	hour_str = now.strftime("%H")
-
-	if hour_str not in ['23', '00', '01', '02', '03', '04', '05', '06']:
-		print('Schedule work started at time' + hour_str)
-		global last_filename
-		pil_image = my_cam.capture()
-		pil_image = draw_date_text(pil_image, font)
-		last_filename = my_storage.upload_image(pil_image)
 
 if __name__ == '__main__':
 	cfg = ConfigParser()
@@ -78,14 +99,10 @@ if __name__ == '__main__':
 	my_storage = Storage(cfg.get('CF_R2_STORAGE', 'CF_ID'), cfg.get('CF_R2_STORAGE', 'KEY_ID'), cfg.get('CF_R2_STORAGE', 'SECRET_KEY'))
 	#my_workerskv = WorkersKV(cfg.get('CF_KV', 'CF_ACCOUNT'), cfg.get('CF_KV', 'CF_TOKEN'), cfg.get('CF_KV', 'KV_NS_ID'))
 	my_serial = SerialComm()
-
-	sched = BackgroundScheduler(daemon=True, timezone="Asia/Singapore")
-	sched.add_job(capture_worker, 'interval', minutes=60)
-	sched.start()
 	
 	CORS(app, resources=r'/*')
 
 	http_server = WSGIServer((cfg.get('HTTP_SERVER', 'HOST'), cfg.getint('HTTP_SERVER', 'PORT')), app)
 
-	print('Web server started.')
+	print('Web server started.', datetime.now())
 	http_server.serve_forever() 

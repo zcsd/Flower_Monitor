@@ -17,7 +17,7 @@ class TGBot:
         res =  requests.post(url = tg_sp_endpoint, data = data, files = {'photo': image_buf})
 
         if res.ok:
-            print("Sent raw photo from TGBot.")
+            print("Sent raw photo message from TGBot.")
             return True
         else:
             return False
@@ -29,7 +29,7 @@ class TGBot:
         res =  requests.post(url = tg_sp_endpoint, data = data)
 
         if res.ok:
-            print("Sent storage photo from TGBot.")
+            print("Sent storage photo message from TGBot.")
             return True
         else:
             return False
