@@ -12,6 +12,7 @@ from tool import draw_date_text, draw_env_text
 from storage import Storage 
 from workerskv import WorkersKV
 from serial_comm import SerialComm
+from database import Database
 
 app = Flask(__name__)
 
@@ -26,9 +27,14 @@ def flower_env():
 		print("[✔] Authorized Request in flower-env.", datetime.now())
 		content = request.json
 
+		now = datetime.now()
+
 		temperature, humidity = my_serial.get_temperature_humidity()
 		lux = my_serial.get_illuminance()
-		print("TODO: upload tem hum lux to planetscale")
+		
+		values = ['NA', temperature, humidity, lux]
+		my_db.insert_env_data(now, values)
+
 		return jsonify({"ok": True})
 	else:
 		print("-------------------------------------------------------------")
@@ -69,11 +75,12 @@ def flower_status():
 				else:
 					print("Command Job and sent to TG group.", datetime.now())
 			else:
-				print("Cron Job and NOT send to TG group.")
+				print("Cron Job and NOT send to TG group.", datetime.now())
 				res = True
 			
 			last_filename = my_storage.upload_image(pil_image)
-			print("TODO: upload tem hum lux to planetscale")
+			values = [last_filename, temperature, humidity, lux]
+			my_db.insert_env_data(now, values)
 			#my_workerskv.put(last_filename, last_filename, str(round(time.time()) + 120))
 
 		if res:
@@ -99,6 +106,7 @@ if __name__ == '__main__':
 	my_storage = Storage(cfg.get('CF_R2_STORAGE', 'CF_ID'), cfg.get('CF_R2_STORAGE', 'KEY_ID'), cfg.get('CF_R2_STORAGE', 'SECRET_KEY'))
 	#my_workerskv = WorkersKV(cfg.get('CF_KV', 'CF_ACCOUNT'), cfg.get('CF_KV', 'CF_TOKEN'), cfg.get('CF_KV', 'KV_NS_ID'))
 	my_serial = SerialComm()
+	my_db = Database(cfg.get('DB', 'HOST'), cfg.get('DB', 'DATABASE'), cfg.get('DB', 'USER'), cfg.get('DB', 'PASSWORD'))
 	
 	CORS(app, resources=r'/*')
 
