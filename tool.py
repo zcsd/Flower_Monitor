@@ -13,7 +13,7 @@ def draw_env_text(pil_image, font, text_list):
     draw = ImageDraw.Draw(pil_image)
     draw.text((30, 130), "T:"+text_list[0]+"°C", font=font, fill =(0, 0, 255))
     draw.text((30, 230), "H:"+text_list[1]+"%", font=font, fill =(0, 0, 255))
-    draw.text((30, 330), "L:"+text_list[2]+" lx", font=font, fill =(0, 0, 255))
+    draw.text((30, 330), "L:"+text_list[2]+"lx", font=font, fill =(0, 0, 255))
     return pil_image
 
 def pil_to_bytes(pil_image):
