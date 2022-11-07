@@ -31,7 +31,15 @@ class Database:
                 print("Inserted env data to DB successfully.")
         except Error as e:
             print("Error while inserting to MySQL", e)
+            # Planetscale MySQL lose connection error
+            print("Trying to reconnect to DB server...")
+            self.mydb.reconnect(attempts=3)
+            if self.mydb.is_connected():
+                print("Reconnected to DB server successfully.")
+                self.cursor = self.mydb.cursor()
+                self.insert_env_data(now, data)
 
     def close_connection(self):
         if self.mydb.is_connected():
+            self.cursor.close()
             self.mydb.close()
