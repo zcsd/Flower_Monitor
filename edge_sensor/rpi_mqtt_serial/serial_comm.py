@@ -2,11 +2,12 @@ import serial
 
 class SerialComm:
     def __init__(self):
+        # usb port connection, /dev/ttyACM0
         self.ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
         self.ser.reset_input_buffer()
         self.ser.readline()
         self.ser.readline()
-        print("Serial Communication Initialized.")
+        print("Serial communication initialized.")
 
     def get_soil_moisture(self):
         self.ser.write(b"sm\n")
