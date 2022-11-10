@@ -20,10 +20,10 @@ class SerialComm:
         line = self.ser.readline().decode('utf-8').rstrip() # t_25.80_h_57.70
         te = line.split("_")[1]
         hu = line.split("_")[3]
-        return [te, hu]
+        return [te[:-1], hu[:-1]] # [:-1] remove last char
 
     def get_illuminance(self):
         self.ser.write(b"lu\n")
         line = self.ser.readline().decode('utf-8').rstrip() # lu_4704.17
         lu  = line.split("_")[1]
-        return lu
+        return lu[:-1]

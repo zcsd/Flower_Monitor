@@ -20,10 +20,10 @@ def on_message(client, userdata, msg):
 if __name__ == '__main__':
     my_serial = SerialComm()
 
-    my_mqtt_client = MqttClient("192.168.1.226", "mqttclient", "mqttclient")
+    my_mqtt_client = MqttClient("192.168.1.226", "mqttclient", "mqttclient", "pi401-flower")
     my_mqtt_client.client.subscribe("flower/test_sensor")
     my_mqtt_client.client.on_message = on_message
 
     sched = BlockingScheduler(daemon=True, timezone="Asia/Singapore")
-    sched.add_job(pub_message, 'interval', minutes=10, id='sensor_env')
+    sched.add_job(pub_message, 'interval', seconds=10, id='sensor_env')
     sched.start()

@@ -117,7 +117,7 @@ if __name__ == '__main__':
 	my_storage = Storage(cfg.get('CF_R2_STORAGE', 'CF_ID'), cfg.get('CF_R2_STORAGE', 'KEY_ID'), cfg.get('CF_R2_STORAGE', 'SECRET_KEY'))
 	#my_workerskv = WorkersKV(cfg.get('CF_KV', 'CF_ACCOUNT'), cfg.get('CF_KV', 'CF_TOKEN'), cfg.get('CF_KV', 'KV_NS_ID'))
 	my_db = Database(cfg.get('DB', 'HOST'), cfg.get('DB', 'DATABASE'), cfg.get('DB', 'USER'), cfg.get('DB', 'PASSWORD'))
-	my_mqtt_client = MqttClient("192.168.1.226", "mqttclient", "mqttclient")
+	my_mqtt_client = MqttClient("192.168.1.226", "mqttclient", "mqttclient", "pi401-app")
 	
 	my_mqtt_client.client.subscribe("flower/env_sensor")
 	my_mqtt_client.client.on_message = on_message

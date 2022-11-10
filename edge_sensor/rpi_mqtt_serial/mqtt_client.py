@@ -3,8 +3,8 @@ from datetime import datetime
 import json
 
 class MqttClient:
-    def __init__(self, broker, username, password):
-        self.client = mqtt.Client(client_id = "pi-edge")
+    def __init__(self, broker, username, password, client_id):
+        self.client = mqtt.Client(client_id = client_id)
         self.client.username_pw_set(username, password)
         self.client.connected_flag = False
         self.client.on_connect = self.on_connect
