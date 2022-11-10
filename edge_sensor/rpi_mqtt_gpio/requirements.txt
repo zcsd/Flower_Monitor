@@ -1,0 +1,4 @@
+Adafruit-DHT==1.4.0
+APScheduler==3.9.1
+paho-mqtt==1.6.1
+RPi.GPIO==0.7.1

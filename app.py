@@ -81,7 +81,7 @@ def flower_status():
 				res = True
 			
 			last_filename = my_storage.upload_image(pil_image)
-			values = [last_filename, temperature, humidity, lux]
+			values = [last_filename, env_sensor_readings[0], env_sensor_readings[1], env_sensor_readings[2]]
 			my_db.insert_env_data(now, values)
 			#my_workerskv.put(last_filename, last_filename, str(round(time.time()) + 120))
 
