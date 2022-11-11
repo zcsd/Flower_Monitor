@@ -25,5 +25,5 @@ if __name__ == '__main__':
     my_mqtt_client.client.on_message = on_message
 
     sched = BlockingScheduler(daemon=True, timezone="Asia/Singapore")
-    sched.add_job(pub_message, 'interval', seconds=10, id='sensor_env')
+    sched.add_job(pub_message, 'interval', minutes=10, id='sensor_env')
     sched.start()
