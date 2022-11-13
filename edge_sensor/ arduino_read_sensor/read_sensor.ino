@@ -1,28 +1,33 @@
-#include <dht.h>  // download the lib from https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
-// BH1750 Illuminance meter 
-#include <BH1750.h> // download the lib from https://github.com/claws/BH1750
-#include <Wire.h> 
-// DHT22 temperature and humidity Sensor
-#define dhtDOPin 4  // Digital Output
-#define dhtPower 5  // Power
-// YL69 Soil Moisture Sensor
-#define soilMoiAOPin A0 // Analog Output
-#define soilMoiPower 7  // Power
+#include <dht.h>
+#include <Wire.h>
+#include <BH1750.h>
+ 
+#define dhtDOPin 4  // DHT22 Sensor Digital Output
+#define dhtPower 5  // DHT22 Sensor Power
+
+#define soilMoiAOPin A0 // Soil Moisture Sensor Analog Output
+#define soilMoiPower 7  // Soil Moisture Sensor Power
+
+#define relayDOPin 3 // Fan Relay Digital Output
 
 dht DHT;
 BH1750 lightMeter;
 
 void setup() {
   Serial.begin(9600);
-  // soil moisture sensor
+  // Soil Moisture Sensor
   pinMode(soilMoiPower, OUTPUT);
   digitalWrite(soilMoiPower, LOW);
-  // temperature and humidity sensor
+  // DHT22
   pinMode(dhtPower, OUTPUT);
   digitalWrite(dhtPower, LOW);
-  // illuminance meter 
+  // Illuminance meter BH1750
+  Wire.begin();
   lightMeter.configure(BH1750::ONE_TIME_HIGH_RES_MODE);
   lightMeter.begin();
+  // Relay control
+  pinMode(relayDOPin, OUTPUT);
+  digitalWrite(relayDOPin, LOW);
 }
 
 void loop() {
@@ -34,9 +39,15 @@ void loop() {
       readDHT();
     } else if (inputMsg == "lu"){
       readLux();
-    } else {
-      Serial.print("na");
-      //Serial.println(inputMsg);
+    } else if (inputMsg == "fan_on"){
+      digitalWrite(relayDOPin, HIGH);
+      Serial.println("fan_on_ok");
+    } else if(inputMsg == "fan_off"){
+      digitalWrite(relayDOPin, LOW);
+      Serial.println("fan_off_ok");
+    } else{
+      Serial.print("Unknown command: ");
+      Serial.println(inputMsg);
     }
   }
 }
