@@ -8,6 +8,7 @@
 - DHT11/22 Temperature and Humidity sensor
 - HW-080 Soil Moisture Sensor
 - HC-SR501 Motion Sensor 
+- JQC3F-5VDC-C Electic Relay
 
 ## Software & Service
 - PlanetScale MySQL Cloud Database (Free 5GB)
@@ -16,3 +17,4 @@
 - Cloudflare R2 Storage (Free 10GB)
 - Cloudflare KV Storage (Free 1GB)
 - MQTT
+- Home Assistant
