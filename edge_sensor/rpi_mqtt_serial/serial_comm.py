@@ -27,3 +27,15 @@ class SerialComm:
         line = self.ser.readline().decode('utf-8').rstrip() # lu_4704.17
         lu  = line.split("_")[1]
         return lu[:-1]
+
+    def turn_on_relay(self):
+        self.ser.write(b"fan_on\n")
+        line = self.ser.readline().decode('utf-8').rstrip()
+        if line == "fan_on_ok":
+            print("Fan is on.")
+
+    def turn_off_relay(self):
+        self.ser.write(b"fan_off\n")
+        line = self.ser.readline().decode('utf-8').rstrip()
+        if line == "fan_off_ok":
+            print("Fan is off.")
