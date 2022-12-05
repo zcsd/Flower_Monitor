@@ -5,7 +5,8 @@
 ### Boards
 - Raspberry Pi 4B with Pi Camera
 - Raspberry Pi 1
-- ESP8266 (ESP-12F)
+- ESP-8266 (ESP-12F)
+- ESP-32S
 - Arduino Uno
 
 ### Sensors
